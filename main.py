@@ -18,12 +18,11 @@ class GameLooper:
 
     def event(self, window):
         char = window.getch()
-        if char == -1:
-            return False
-        else:
-            if chr(char) == 'q' or chr(char) == 'Q':
-                exit(0)
+        if(char == -1):
             return char
+        if chr(char) == 'q' or chr(char) == 'Q':
+            exit(0)
+        return char
 
     def relax(self):
         curses.napms(20)
@@ -42,6 +41,14 @@ class Menu:
     def run(self, game):
         while True:
             char = game.event(self._window)
+            offset = char - ord('A')
+            if not offset in range(0, len(self._actions)):
+                offset = char - ord('a')
+
+            if offset in range(0, len(self._actions)):
+                if not self._actions[offset]():
+                    return
+            
             game.relax()
 
     def start(self, game):
@@ -68,8 +75,10 @@ def startup(screen):
     game = GameLooper()
 
 
+    false = lambda: False
+
     menu = Menu(PROGRAM_NAME + " " + VERSION,
-            ["New Game", "Load Game", "Statistics"], [None, None, None])
+            ["New Game", "Load Game", "Statistics"], [false, None, None])
 
 
 
