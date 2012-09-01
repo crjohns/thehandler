@@ -11,6 +11,7 @@ winx = 80
 winy = 30
 
 gamewindow = pygcurse.PygcurseWindow(winx, winy, PROGRAM_NAME + " " + VERSION, fullscreen=False)
+gamewindow.autoupdate = False
 
 
 
@@ -52,5 +53,6 @@ while True:
             exit(0)
 
     g_game.display(gamewindow)
+    gamewindow.update()
 
     clock.tick(60)
