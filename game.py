@@ -27,6 +27,12 @@ class Game:
     def delShare(self, key):
         self.sharemap.remove(key)
 
+    # Display current scene
     def display(self, gamewindow):
         if len(self.scenestack) >= 1:
             self.scenestack[0].draw(gamewindow)
+
+    # Hand input to current scene
+    def inchar(self, key, char):
+        if len(self.scenestack) >= 1:
+            self.scenestack[0].inchar(key)

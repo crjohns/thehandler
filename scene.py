@@ -24,4 +24,8 @@ class Scene:
         for (zindex, window) in self.windows:
             window.draw(gamewindow)
 
+    def inchar(self, key):
+        if key in self.actions:
+            self.actions[key](key)
+
 
