@@ -1062,6 +1062,15 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
 
         return char
 
+    def centerchars(self, chars, y, offset=0, width=None, fgcolor=None, bgcolor=None):
+        if not width:
+            width = self._width - offset
+
+        x = (width/2) - len(chars)/2 + offset
+        self.putchars(chars, x=x, y=y, fgcolor=fgcolor, bgcolor=bgcolor)
+
+
+
 
     def putchars(self, chars, x=None, y=None, fgcolor=None, bgcolor=None, indent=False):
         # doc - does not modify the cursor. That's how putchars is different from print() or write()
