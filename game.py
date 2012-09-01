@@ -13,7 +13,7 @@ class Game:
         self.scenestack.insert(0, scene)
 
     def popScene(self):
-        self.scenestack = self.scenelist[1:]
+        self.scenestack = self.scenestack[1:]
 
     def getShare(self, key):
         if not key in self.sharemap:

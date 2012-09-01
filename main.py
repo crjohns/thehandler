@@ -17,29 +17,39 @@ gamewindow.autoupdate = False
 
 class StartMenu(BaseWindow):
     def __init__(self):
-        self.flag = False
         pass
 
     def getActions(self):
-        return [(pygame.K_a, lambda x: self.handleA(x))]
+        return [(pygame.K_a, lambda x: self.startGame())]
 
-    def handleA(self, a):
-        self.flag = not self.flag
+    def startGame(self):
+        global g_game
+
+        newgamescene = Scene()
+        class NewGameWindow(BaseWindow):
+
+            def getActions(self):
+                return [(pygame.K_q, lambda x: g_game.popScene())]
+
+            def draw(self, gamewindow):
+                gamewindow.putchars("Create a new game")
+
+        newgamescene.addWindow(NewGameWindow())
+
+        g_game.pushScene(newgamescene)
+
 
     def printcentered(self, gamewindow, message, y):
         global winx
         gamewindow.putchars(message, x = (winx/2 - len(message)/2), y = y)
 
     def draw(self, gamewindow):
-        self.printcentered(gamewindow, "Main Menu", y=0)
+        gamewindow.centerchars("Main Menu", y=0)
 
         loc = 5
         for option in ['A - New Game']:
             gamewindow.putchars(option, x=0, y=loc)
             loc += 1
-
-        if self.flag:
-            gamewindow.putchars("You pressed the button!", x=0, y=10)
 
 
 g_game = Game()
