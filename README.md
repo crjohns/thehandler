@@ -1,4 +1,4 @@
-thehandler
+The Handler
 ==========
 
 ASCII Spy Game
