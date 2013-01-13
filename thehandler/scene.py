@@ -14,10 +14,18 @@ class Scene:
         self.windows.insert(0, (zindex, window))
         self.windows = sorted(self.windows, key = lambda x: x[0])
 
-        for (key,action) in window.getActions():
+        self.addActions(window.getActions())
+
+
+    def addActions(self, actions):
+        for (key,action) in actions:
             if key in self.actions:
                 raise ValueError("Action for %s already exists" % key)
             self.actions[key] = action
+
+    def refreshActions(self):
+        for window in self.windows:
+            self.addActions(window.getActions())
 
     def draw(self, gamewindow):
         gamewindow.fill(" ")

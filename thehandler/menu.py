@@ -1,5 +1,5 @@
 import thehandler
-from window import BaseWindow, TextWindow
+from window import BaseWindow, TextWindow, EditText
 from scene import Scene
 import pygame
 
@@ -24,6 +24,8 @@ class StartMenu(BaseWindow):
                 gamewindow.putchars("Create a new game")
 
         newgamescene.addWindow(NewGameWindow())
+
+        newgamescene.addWindow(EditText(length = 30, activateButton = pygame.K_RETURN, location = (0,20)))
 
         newgamescene.addWindow(TextWindow((50,0), (thehandler.WINX-50,thehandler.WINY), lines="Hello you\nThis is too long\nHow\nAre\nYou?\nMore\nMore2\nMore23\nMore4"))
 
