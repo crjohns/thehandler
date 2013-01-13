@@ -11,6 +11,11 @@ class BaseWindow:
     def draw(self, gamewindow):
         pass
 
+    # Return True if this is the only window which can have input 
+    # at the current time, False otherwise
+    def isModal(self):
+        return False
+
 
 class TextWindow(BaseWindow):
 
@@ -66,10 +71,21 @@ class EditText(BaseWindow):
 
         self.getActions = self.__make_activate_actions__()
 
+
+    def setPosition(self, pos):
+        if pos < 0:
+            self.position = 0
+        elif pos > self.length:
+            self.position = self.length
+        elif pos > len(self.text):
+            self.position = len(self.text)
+        else:
+            self.position = pos
+
     def activate(self):
         print "Active now"
         self.active = True
-        self.position = min(len(self.text), self.length)
+        self.setPosition(len(self.text))
         self.getActions = self.__make_deactivate_actions__()
     
     def deactivate(self):
@@ -84,32 +100,43 @@ class EditText(BaseWindow):
     def __make_deactivate_actions__(self):
         actions = [(pygame.K_RETURN, lambda x: self.deactivate())]
 
-        for key in range(pygame.K_0, pygame.K_DELETE):
+        for key in range(pygame.K_SPACE, pygame.K_DELETE):
             actions.append((key, lambda x: self.doWrite(x)))
 
         actions.append((pygame.K_BACKSPACE, lambda x: self.backspace()))
         actions.append((pygame.K_DELETE, lambda x: self.delete()))
 
+        actions.append((pygame.K_LEFT, lambda x: self.setPosition(self.position - 1)))
+        actions.append((pygame.K_RIGHT, lambda x: self.setPosition(self.position + 1)))
+
         return lambda: actions
+
+    def isModal(self):
+        return self.active
 
 
     def doWrite(self, letter):
-        if self.position > self.length or len(text) >= self.length:
+        if self.position > self.length or len(self.text) >= self.length:
             return
-        self.text = self.text[:self.position] + letter + self.text[self.position:]
-        self.position = min(self.position+1, self.length)
+        self.text = self.text[:self.position] + chr(letter) + self.text[self.position:]
+        self.setPosition(self.position + 1)
 
     def delete(self):
         self.text = self.text[:self.position] + self.text[self.position+1:]
 
     def backspace(self):
         self.text = self.text[:self.position-1] + self.text[self.position:]
-        self.position = max(self.position-1, 0)
+        self.setPosition(self.position - 1)
 
     def draw(self, gamewindow):
-        gamewindow.putchars(self.text, x = self.location[0], y = self.location[1])
-        if self.active:
-            gamewindow.cursor = (self.location[0] + self.position, self.location[1])
+        if len(self.text) == 0 and not self.active:
+            gamewindow.putchars(self.hint, x = self.location[0], y = self.location[1], fgcolor='gray')
+        else:
+            gamewindow.putchars(self.text, x = self.location[0], y = self.location[1])
+
+        gamewindow.settint(0,0,0, (self.location[0], self.location[1], self.length, 1))
+        if self.active and self.position < self.length:
+            gamewindow.lighten(80, (self.location[0] + self.position, self.location[1], 1, 1))
 
 
 

@@ -27,7 +27,11 @@ while True:
             exit(0)
 
         if event.type == pygame.KEYDOWN:
-            g_game.inchar(key = event.key, char = event.unicode)
+            if event.key in range(pygame.K_SPACE, pygame.K_DELETE):
+                key = ord(event.unicode)
+            else:
+                key = event.key
+            g_game.inchar(key = key, char = event.unicode)
 
     g_game.display(gamewindow)
     gamewindow.update()

@@ -21,11 +21,11 @@ class StartMenu(BaseWindow):
                 return [(pygame.K_q, lambda x: thehandler.g_game.popScene())]
 
             def draw(self, gamewindow):
-                gamewindow.putchars("Create a new game")
+                gamewindow.putchars("Create a new game", x=0, y=0)
 
         newgamescene.addWindow(NewGameWindow())
 
-        newgamescene.addWindow(EditText(length = 30, activateButton = pygame.K_RETURN, location = (0,20)))
+        newgamescene.addWindow(EditText(length = 30, hint="Enter Your Name", activateButton = pygame.K_RETURN, location = (0,20)))
 
         newgamescene.addWindow(TextWindow((50,0), (thehandler.WINX-50,thehandler.WINY), lines="Hello you\nThis is too long\nHow\nAre\nYou?\nMore\nMore2\nMore23\nMore4"))
 

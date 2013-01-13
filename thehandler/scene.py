@@ -1,4 +1,6 @@
 from window import BaseWindow
+import pygame
+import pygame.key
 
 class Scene:
     def __init__(self):
@@ -14,18 +16,27 @@ class Scene:
         self.windows.insert(0, (zindex, window))
         self.windows = sorted(self.windows, key = lambda x: x[0])
 
-        self.addActions(window.getActions())
+        if window.isModal():
+            self.actions = dict()
 
+        self.addActions(window.getActions())
 
     def addActions(self, actions):
         for (key,action) in actions:
             if key in self.actions:
-                raise ValueError("Action for %s already exists" % key)
+                raise ValueError("Action for '%s' already exists" % pygame.key.name(key))
             self.actions[key] = action
 
     def refreshActions(self):
-        for window in self.windows:
+        self.actions = dict()
+        for (zindex, window) in self.windows:
+            if window.isModal():
+                self.actions = dict()
+
             self.addActions(window.getActions())
+
+            if window.isModal():
+                return
 
     def draw(self, gamewindow):
         gamewindow.fill(" ")
@@ -35,5 +46,5 @@ class Scene:
     def inchar(self, key):
         if key in self.actions:
             self.actions[key](key)
-
-
+        # If another handler modifies actions, get the new ones
+        self.refreshActions()
