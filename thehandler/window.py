@@ -50,8 +50,11 @@ class TextWindow(BaseWindow):
 
 
     def getActions(self):
-        return [(self.updown[0], lambda x: self.uppress()),
-                (self.updown[1], lambda x: self.downpress())]
+        if not self.updown:
+            return []
+        else:
+            return [(self.updown[0], lambda x: self.uppress()),
+                    (self.updown[1], lambda x: self.downpress())]
 
     def draw(self, gamewindow):
         if self.lines:
