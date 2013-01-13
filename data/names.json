@@ -1,0 +1,18 @@
+[
+    {"name": "tim", "part": "first", "gender": "male", "nation": "usa"},
+    {"name": "james", "part": "first", "gender": "male", "nation": "usa"},
+    {"name": "chris", "part": "first", "gender": "male", "nation": "usa"},
+    {"name": "tom", "part": "first", "gender": "male", "nation": "usa"},
+    {"name": "fred", "part": "first", "gender": "male", "nation": "usa"},
+    {"name": "sara", "part": "first", "gender": "female", "nation": "usa"},
+    {"name": "liz", "part": "first", "gender": "female", "nation": "usa"},
+    {"name": "samantha", "part": "first", "gender": "female", "nation": "usa"},
+    {"name": "jessica", "part": "first", "gender": "female", "nation": "usa"},
+    {"name": "robin", "part": "first", "gender": "female", "nation": "usa"},
+    {"name": "jones", "part": "last", "gender": "any", "nation": "usa"},
+    {"name": "johnson", "part": "last", "gender": "any", "nation": "usa"},
+    {"name": "smith", "part": "last", "gender": "any", "nation": "usa"},
+    {"name": "connors", "part": "last", "gender": "any", "nation": "usa"},
+    {"name": "stein", "part": "last", "gender": "any", "nation": "usa"},
+    {"name": "franco", "part": "last", "gender": "any", "nation": "usa"}
+]

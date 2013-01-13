@@ -5,7 +5,7 @@ PROGRAM_NAME = "The Handler"
 VERSION = "0.0 dev"
 
 WINX = 80
-WINY = 30
+WINY = 40
 
 g_game = None
 

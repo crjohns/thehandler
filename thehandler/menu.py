@@ -1,10 +1,10 @@
-import thehandler
+import thehandler, thehandler.model
 from window import BaseWindow, TextWindow, EditText
 from scene import Scene
 import pygame
+import random
 
 class StartMenu(BaseWindow):
-
 
     def __init__(self):
         pass
@@ -21,13 +21,34 @@ class StartMenu(BaseWindow):
                 return [(pygame.K_q, lambda x: thehandler.g_game.popScene())]
 
             def draw(self, gamewindow):
-                gamewindow.putchars("Create a new game", x=0, y=0)
+                gamewindow.centerchars("Create a new game", y=0)
 
         newgamescene.addWindow(NewGameWindow())
 
-        newgamescene.addWindow(EditText(length = 30, hint="Enter Your Name", activateButton = pygame.K_RETURN, location = (0,20)))
+        lines = \
+                ["A - Your Name:", "B - Agency Name:", "C - Agency Abbreviation:"]
+        newgamescene.addWindow(TextWindow(location = (0, 5), lines = lines))
 
-        newgamescene.addWindow(TextWindow((50,0), (thehandler.WINX-50,thehandler.WINY), lines="Hello you\nThis is too long\nHow\nAre\nYou?\nMore\nMore2\nMore23\nMore4"))
+        name = EditText(length = 32, activateButton = pygame.K_a, \
+                location = (len(lines[0]) + 1, 5), fgcolor='white')
+
+        gender = random.sample(['male', 'female'], 1)[0]
+        tempname = thehandler.model.getName(gender)
+
+        name.text = tempname[0] + " " + tempname[1]
+
+        agencyname = EditText(length = 32, activateButton = pygame.K_b, \
+                location = (len(lines[1]) + 1, 6), fgcolor='white')
+        agencyname.text = 'Central Terrorist Task Force'
+
+        agencyabbrev = EditText(length = 8, activateButton = pygame.K_c, \
+                location = (len(lines[2]) + 1, 7), fgcolor='white')
+
+        agencyabbrev.text = 'CTTF'
+
+        newgamescene.addWindow(name)
+        newgamescene.addWindow(agencyname)
+        newgamescene.addWindow(agencyabbrev)
 
         thehandler.g_game.pushScene(newgamescene)
 

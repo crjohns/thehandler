@@ -1,5 +1,6 @@
 import thehandler
 import pygame
+import pygcurse
 
 class BaseWindow:
     def __init__(self):
@@ -19,12 +20,12 @@ class BaseWindow:
 
 class TextWindow(BaseWindow):
 
-    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN)):
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), fgcolor=pygcurse.DEFAULTFGCOLOR):
         self.updown = updown
         self.setLines(lines)
         self.title = title
         self.topline = 0
-
+        self.fgcolor = fgcolor
         self.location = location
         self.dims = dims
 
@@ -35,7 +36,9 @@ class TextWindow(BaseWindow):
         if isinstance(lines, str):
             self.lines = lines.split('\n')
         elif isinstance(lines, list):
-            self.lines = lines
+            self.lines = []
+            for line in lines:
+                self.lines += line.split('\n')
         else:
             raise TypeError("Lines are not string or list")
 
@@ -53,7 +56,8 @@ class TextWindow(BaseWindow):
     def draw(self, gamewindow):
         if self.lines:
             for (offset, line) in enumerate(self.lines[self.topline : self.topline+self.dims[1]]):
-                gamewindow.putchars(line[:self.dims[0]], x=self.location[0], y=self.location[1]+offset)
+                gamewindow.putchars(line[:self.dims[0]], x=self.location[0], y=self.location[1]+offset, \
+                        fgcolor = self.fgcolor)
 
 class EditText(BaseWindow):
 
@@ -63,11 +67,13 @@ class EditText(BaseWindow):
 
     active = False
 
-    def __init__(self, length, activateButton, hint = "", location = (0,0)):
+    def __init__(self, length, activateButton = None, hint = "", location = (0,0), fgcolor = \
+            pygcurse.DEFAULTFGCOLOR):
         self.length = length
         self.activateButton = activateButton
         self.hint = hint
         self.location = location
+        self.fgcolor = fgcolor
 
         self.getActions = self.__make_activate_actions__()
 
@@ -83,19 +89,20 @@ class EditText(BaseWindow):
             self.position = pos
 
     def activate(self):
-        print "Active now"
         self.active = True
         self.setPosition(len(self.text))
         self.getActions = self.__make_deactivate_actions__()
     
     def deactivate(self):
-        print "Not active now"
         self.active = False
         self.getActions = self.__make_activate_actions__()
 
 
     def __make_activate_actions__(self):
-        return lambda: [(self.activateButton, lambda x: self.activate())]
+        if self.activateButton:
+            return lambda: [(self.activateButton, lambda x: self.activate())]
+        else:
+            return []
 
     def __make_deactivate_actions__(self):
         actions = [(pygame.K_RETURN, lambda x: self.deactivate())]
@@ -132,7 +139,7 @@ class EditText(BaseWindow):
         if len(self.text) == 0 and not self.active:
             gamewindow.putchars(self.hint, x = self.location[0], y = self.location[1], fgcolor='gray')
         else:
-            gamewindow.putchars(self.text, x = self.location[0], y = self.location[1])
+            gamewindow.putchars(self.text, x = self.location[0], y = self.location[1], fgcolor=self.fgcolor)
 
         gamewindow.settint(0,0,0, (self.location[0], self.location[1], self.length, 1))
         if self.active and self.position < self.length:

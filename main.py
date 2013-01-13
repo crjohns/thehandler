@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import thehandler.pygcurse
 import pygame
 import thehandler
