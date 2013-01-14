@@ -1,4 +1,5 @@
 from scene import Scene
+import thehandler
 
 class Game:
     def __init__(self):
@@ -29,6 +30,7 @@ class Game:
 
     # Display current scene
     def display(self, gamewindow):
+        gamewindow.settint(0,0,0, (0,0, thehandler.WINX, thehandler.WINY))
         if len(self.scenestack) >= 1:
             self.scenestack[0].draw(gamewindow)
 

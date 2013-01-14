@@ -1,5 +1,5 @@
 import thehandler, thehandler.model
-from window import BaseWindow, TextWindow, EditText
+from window import BaseWindow, TextWindow, EditText, SelectText
 from scene import Scene
 import pygame
 import random
@@ -50,7 +50,7 @@ class StartMenu(BaseWindow):
         newgamescene.addWindow(agencyname)
         newgamescene.addWindow(agencyabbrev)
 
-        newgamescene.addWindow(TextWindow(location = (0,20), dims=(15,20), leftright=(pygame.K_LEFT, pygame.K_RIGHT), lines="Hello world the witch is dead\nWhat are you doing?"))
+        newgamescene.addWindow(SelectText(location = (0,20), dims=(15,2), leftright=(pygame.K_LEFT, pygame.K_RIGHT), lines=["Option A", "Option B", "Option C", "Oprtion D", "OOO E"]))
 
         thehandler.g_game.pushScene(newgamescene)
 

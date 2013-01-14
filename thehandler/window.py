@@ -78,6 +78,32 @@ class TextWindow(BaseWindow):
                              x=self.location[0], y=self.location[1]+offset, \
                              fgcolor = self.fgcolor)
 
+class SelectText(TextWindow):
+    selected = 0
+
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR):
+        TextWindow.__init__(self, location, dims, title, lines, updown, leftright, fgcolor)
+
+    def draw(self, gamewindow):
+        TextWindow.draw(self, gamewindow)
+
+        gamewindow.lighten(80, ( \
+                self.location[0], \
+                self.location[1]+self.selected-self.topline,
+                self.dims[0], 1))
+
+    def downpress(self):
+        self.selected = min(self.selected+1, len(self.lines) - 1)
+        if self.selected > (self.dims[1] - self.topline - 1):
+            TextWindow.downpress(self)
+        print self.selected,self.topline
+
+    def uppress(self):
+        self.selected = max(self.selected-1, 0)
+        if self.selected < self.topline:
+            TextWindow.uppress(self)
+        
+
 class EditText(BaseWindow):
 
     activateButton = None
@@ -160,10 +186,8 @@ class EditText(BaseWindow):
         else:
             gamewindow.putchars(self.text, x = self.location[0], y = self.location[1], fgcolor=self.fgcolor)
 
-        gamewindow.settint(0,0,0, (self.location[0], self.location[1], self.length, 1))
         if self.active and self.position < self.length:
             gamewindow.lighten(80, (self.location[0] + self.position, self.location[1], 1, 1))
 
 
-class SelectText(BaseWindow):
-    pass
+
