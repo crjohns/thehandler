@@ -20,7 +20,7 @@ class BaseWindow:
 
 class TextWindow(BaseWindow):
 
-    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), fgcolor=pygcurse.DEFAULTFGCOLOR):
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR):
         self.updown = updown
         self.setLines(lines)
         self.title = title
@@ -28,6 +28,8 @@ class TextWindow(BaseWindow):
         self.fgcolor = fgcolor
         self.location = location
         self.dims = dims
+        self.leftside = 0
+        self.leftright = leftright
 
 
     def setLines(self, lines):
@@ -48,19 +50,33 @@ class TextWindow(BaseWindow):
     def downpress(self):
         self.topline = max(min(self.topline+1, len(self.lines) - self.dims[1]), 0)
 
+    def leftpress(self):
+        self.leftside = max(0, self.leftside - 1)
+
+    def rightpress(self):
+        maxline = max(map(len, self.lines))
+        self.leftside = min(self.leftside + 1, maxline-self.dims[1])
+
 
     def getActions(self):
-        if not self.updown:
-            return []
-        else:
-            return [(self.updown[0], lambda x: self.uppress()),
+        ret = []
+        if self.updown:
+            ret += [(self.updown[0], lambda x: self.uppress()),
                     (self.updown[1], lambda x: self.downpress())]
+        if self.leftright:
+            ret += [(self.leftright[0], lambda x: self.leftpress()),
+                    (self.leftright[1], lambda x: self.rightpress())]
+
+        return ret
+
 
     def draw(self, gamewindow):
         if self.lines:
             for (offset, line) in enumerate(self.lines[self.topline : self.topline+self.dims[1]]):
-                gamewindow.putchars(line[:self.dims[0]], x=self.location[0], y=self.location[1]+offset, \
-                        fgcolor = self.fgcolor)
+                gamewindow.putchars( \
+                        line[self.leftside:self.leftside+min(len(line),self.dims[0])], \
+                             x=self.location[0], y=self.location[1]+offset, \
+                             fgcolor = self.fgcolor)
 
 class EditText(BaseWindow):
 
@@ -149,4 +165,5 @@ class EditText(BaseWindow):
             gamewindow.lighten(80, (self.location[0] + self.position, self.location[1], 1, 1))
 
 
-
+class SelectText(BaseWindow):
+    pass

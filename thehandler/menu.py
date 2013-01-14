@@ -27,7 +27,7 @@ class StartMenu(BaseWindow):
 
         lines = \
                 ["A - Your Name:", "B - Agency Name:", "C - Agency Abbreviation:"]
-        newgamescene.addWindow(TextWindow(location = (0, 5), lines = lines))
+        newgamescene.addWindow(TextWindow(location = (0, 5), lines = lines, updown=None))
 
         name = EditText(length = 32, activateButton = pygame.K_a, \
                 location = (len(lines[0]) + 1, 5), fgcolor='white')
@@ -49,6 +49,8 @@ class StartMenu(BaseWindow):
         newgamescene.addWindow(name)
         newgamescene.addWindow(agencyname)
         newgamescene.addWindow(agencyabbrev)
+
+        newgamescene.addWindow(TextWindow(location = (0,20), dims=(15,20), leftright=(pygame.K_LEFT, pygame.K_RIGHT), lines="Hello world the witch is dead\nWhat are you doing?"))
 
         thehandler.g_game.pushScene(newgamescene)
 
