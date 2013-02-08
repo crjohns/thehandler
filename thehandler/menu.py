@@ -50,7 +50,7 @@ class StartMenu(BaseWindow):
         newgamescene.addWindow(agencyname)
         newgamescene.addWindow(agencyabbrev)
 
-        newgamescene.addWindow(SelectText(location = (0,20), dims=(15,2), leftright=(pygame.K_LEFT, pygame.K_RIGHT), lines=["Option A", "Option B", "Option C", "Oprtion D", "OOO E"]))
+        newgamescene.addWindow(SelectText(location = (1,20), dims=(15,2), leftright=(pygame.K_LEFT, pygame.K_RIGHT), lines=["Option A", "Option B", "Option C", "Oprtion D", "OOO E"], border=True))
 
         thehandler.g_game.pushScene(newgamescene)
 

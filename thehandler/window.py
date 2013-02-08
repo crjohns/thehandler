@@ -20,7 +20,7 @@ class BaseWindow:
 
 class TextWindow(BaseWindow):
 
-    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR):
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR, border=False):
         self.updown = updown
         self.setLines(lines)
         self.title = title
@@ -30,6 +30,7 @@ class TextWindow(BaseWindow):
         self.dims = dims
         self.leftside = 0
         self.leftright = leftright
+        self.border = border
 
 
     def setLines(self, lines):
@@ -77,12 +78,39 @@ class TextWindow(BaseWindow):
                         line[self.leftside:self.leftside+min(len(line),self.dims[0])], \
                              x=self.location[0], y=self.location[1]+offset, \
                              fgcolor = self.fgcolor)
+        if self.border:
+            gamewindow.drawline(char='+', \
+                    start_pos=(self.location[0]-1, self.location[1]-1), \
+                    end_pos=(self.location[0]+self.dims[0],self.location[1]-1), \
+                    fgcolor=self.fgcolor)
+            gamewindow.drawline(char='+', \
+                    start_pos=(self.location[0]-1, self.location[1]+self.dims[1]), \
+                    end_pos=(self.location[0]+self.dims[0],self.location[1]+self.dims[1]), \
+                    fgcolor=self.fgcolor)
+            gamewindow.drawline(char='-', \
+                    start_pos=(self.location[0], self.location[1]-1), \
+                    end_pos=(self.location[0]+self.dims[0]-1,self.location[1]-1), \
+                    fgcolor=self.fgcolor)
+            gamewindow.drawline(char='-', \
+                    start_pos=(self.location[0], self.location[1]+self.dims[1]), \
+                    end_pos=(self.location[0]+self.dims[0]-1,self.location[1]+self.dims[1]), \
+                    fgcolor=self.fgcolor)
+            gamewindow.drawline(char='|', \
+                    start_pos=(self.location[0]-1, self.location[1]), \
+                    end_pos=(self.location[0]-1,self.location[1]+self.dims[1]-1), \
+                    fgcolor=self.fgcolor)
+            gamewindow.drawline(char='|', \
+                    start_pos=(self.location[0]+self.dims[0], self.location[1]), \
+                    end_pos=(self.location[0]+self.dims[0],self.location[1]+self.dims[1]-1), \
+                    fgcolor=self.fgcolor)
 
 class SelectText(TextWindow):
     selected = 0
+    statbar = False
 
-    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR):
-        TextWindow.__init__(self, location, dims, title, lines, updown, leftright, fgcolor)
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR, border=False, statbar=False):
+        TextWindow.__init__(self, location, dims, title, lines, updown, leftright, fgcolor, border)
+        self.statbar = statbar
 
     def draw(self, gamewindow):
         TextWindow.draw(self, gamewindow)
@@ -92,11 +120,18 @@ class SelectText(TextWindow):
                 self.location[1]+self.selected-self.topline,
                 self.dims[0], 1))
 
+        statline = "%d/%d" % (self.selected+1,len(self.lines))
+        gamewindow.putchars( \
+                statline, \
+                x = self.location[0]+self.dims[0]-len(statline), \
+                y = self.location[1]+self.dims[1], \
+                fgcolor = self.fgcolor)
+
+
     def downpress(self):
         self.selected = min(self.selected+1, len(self.lines) - 1)
         if self.selected > (self.dims[1] - self.topline - 1):
             TextWindow.downpress(self)
-        print self.selected,self.topline
 
     def uppress(self):
         self.selected = max(self.selected-1, 0)
