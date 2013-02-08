@@ -2,12 +2,24 @@ import thehandler
 import pygame
 import pygcurse
 
-class BaseWindow:
-    def __init__(self):
-        pass
+class BaseWindow(object):
+
+    modal = False
+
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), modal = False):
+        self.location = location
+        self.dims = dims
+        self.modal = modal
+        self.built_in_actions = []
 
     def getActions(self):
-        return []
+        return self.built_in_actions
+
+    def addAction(self, key, handler):
+        self.built_in_actions.append((key, handler))
+
+    def clearActions(self):
+        self.built_in_actions = []
 
     def draw(self, gamewindow):
         pass
@@ -15,22 +27,22 @@ class BaseWindow:
     # Return True if this is the only window which can have input 
     # at the current time, False otherwise
     def isModal(self):
-        return False
+        return self.modal
 
 
 class TextWindow(BaseWindow):
 
-    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR, border=False):
+    def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR, border=False, status = None):
+        super(TextWindow, self).__init__(location, dims)
         self.updown = updown
         self.setLines(lines)
         self.title = title
         self.topline = 0
         self.fgcolor = fgcolor
-        self.location = location
-        self.dims = dims
         self.leftside = 0
         self.leftright = leftright
         self.border = border
+        self.status = status
 
 
     def setLines(self, lines):
@@ -103,13 +115,26 @@ class TextWindow(BaseWindow):
                     start_pos=(self.location[0]+self.dims[0], self.location[1]), \
                     end_pos=(self.location[0]+self.dims[0],self.location[1]+self.dims[1]-1), \
                     fgcolor=self.fgcolor)
+        
+        if self.title:
+            gamewindow.centerchars(self.title, \
+                    offset=self.location[0], \
+                    width=self.dims[0], \
+                    y=self.location[1]-1, \
+                    fgcolor=self.fgcolor)
+
+        if self.status:
+            gamewindow.putchars(self.status, \
+                    x = self.location[0]+self.dims[0]-len(self.status), \
+                    y = self.location[1]+self.dims[1],
+                    fgcolor = self.fgcolor)
 
 class SelectText(TextWindow):
     selected = 0
     statbar = False
 
     def __init__(self, location=(0,0), dims=(thehandler.WINX, thehandler.WINY), title=None, lines=None, updown=(pygame.K_UP, pygame.K_DOWN), leftright=None, fgcolor=pygcurse.DEFAULTFGCOLOR, border=False, statbar=False):
-        TextWindow.__init__(self, location, dims, title, lines, updown, leftright, fgcolor, border)
+        super(SelectText, self).__init__(location, dims, title, lines, updown, leftright, fgcolor, border)
         self.statbar = statbar
 
     def draw(self, gamewindow):
@@ -120,12 +145,7 @@ class SelectText(TextWindow):
                 self.location[1]+self.selected-self.topline,
                 self.dims[0], 1))
 
-        statline = "%d/%d" % (self.selected+1,len(self.lines))
-        gamewindow.putchars( \
-                statline, \
-                x = self.location[0]+self.dims[0]-len(statline), \
-                y = self.location[1]+self.dims[1], \
-                fgcolor = self.fgcolor)
+        self.status = "%d/%d" % (self.selected+1,len(self.lines))
 
 
     def downpress(self):
@@ -149,10 +169,9 @@ class EditText(BaseWindow):
 
     def __init__(self, length, activateButton = None, hint = "", location = (0,0), fgcolor = \
             pygcurse.DEFAULTFGCOLOR):
-        self.length = length
+        super(EditText, self).__init__(location, (length, 1))
         self.activateButton = activateButton
         self.hint = hint
-        self.location = location
         self.fgcolor = fgcolor
 
         self.getActions = self.__make_activate_actions__()
@@ -161,8 +180,8 @@ class EditText(BaseWindow):
     def setPosition(self, pos):
         if pos < 0:
             self.position = 0
-        elif pos > self.length:
-            self.position = self.length
+        elif pos > self.dims[0]:
+            self.position = self.dims[0]
         elif pos > len(self.text):
             self.position = len(self.text)
         else:
@@ -203,7 +222,7 @@ class EditText(BaseWindow):
 
 
     def doWrite(self, letter):
-        if self.position > self.length or len(self.text) >= self.length:
+        if self.position > self.dims[0] or len(self.text) >= self.dims[0]:
             return
         self.text = self.text[:self.position] + chr(letter) + self.text[self.position:]
         self.setPosition(self.position + 1)
@@ -221,8 +240,65 @@ class EditText(BaseWindow):
         else:
             gamewindow.putchars(self.text, x = self.location[0], y = self.location[1], fgcolor=self.fgcolor)
 
-        if self.active and self.position < self.length:
+        if self.active and self.position < self.dims[0]:
             gamewindow.lighten(80, (self.location[0] + self.position, self.location[1], 1, 1))
 
 
+class ModalWrapper(BaseWindow):
+    
+    def __init__(self, scene, window, dismisskey=pygame.K_RETURN, dismisshandler=lambda sc,wrap: sc.removeWindow(wrap)):
+        super(ModalWrapper,self).__init__( \
+                location=(thehandler.WINX/2-(window.dims[0]/2), \
+                          thehandler.WINY/2-(window.dims[1]/2)), \
+                dims=window.dims,
+                modal=True)
+        window.location = self.location
+        self.dismisskey = dismisskey
+        self.dismisshandler = dismisshandler
+        self.scene = scene
+        self.window = window
+        self.modal = True
 
+    def getActions(self):
+        ret = self.window.getActions()
+
+        ret = filter(lambda x: x[0] != self.dismisskey, ret)
+        ret.append((self.dismisskey, lambda x: self.dismisshandler(self.scene, self)))
+
+        return ret
+
+    def draw(self, gamewindow):
+        gamewindow.settint(-100, -100, -100, region=(0,0,thehandler.WINX, thehandler.WINY))
+        gamewindow.settint(0,0,0, region=(self.location[0], self.location[1], self.dims[0], self.dims[1]))
+        gamewindow.fill('', (self.location[0], self.location[1], self.dims[0], self.dims[1]))
+        self.window.draw(gamewindow)
+
+def createAlert(scene, lines = [], title = None, fgcolor='white', border=False):
+    width = max(map(len, lines))
+    modal = ModalWrapper(scene, \
+                TextWindow(dims=(width, min(len(lines), 20)), \
+                           lines = lines, \
+                           title = title, \
+                           fgcolor = fgcolor, \
+                           border = border, \
+                           status = 'Enter: Close'))
+
+    return modal
+
+def createSelector(scene, choices, callback, default=0, title = None, fgcolor = 'white', border=False):
+
+    def handle(sc, win):
+        sc.removeWindow(win)
+        callback(win.window.selected)
+
+    width = max(map(len, choices))
+    modal = ModalWrapper(scene, \
+                SelectText(dims=(width, min(len(choices), 10)), \
+                           lines=choices, \
+                           statbar=True, \
+                           fgcolor=fgcolor, \
+                           border=border, \
+                           title=title), \
+                dismisshandler = handle)
+
+    return modal

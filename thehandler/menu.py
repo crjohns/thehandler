@@ -1,5 +1,6 @@
+from __future__ import print_function
 import thehandler, thehandler.model
-from window import BaseWindow, TextWindow, EditText, SelectText
+from window import *
 from scene import Scene
 import pygame
 import random
@@ -7,7 +8,7 @@ import random
 class StartMenu(BaseWindow):
 
     def __init__(self):
-        pass
+        super(StartMenu,self).__init__()
 
     def getActions(self):
         return [(pygame.K_a, lambda x: self.startGame())]
@@ -26,31 +27,56 @@ class StartMenu(BaseWindow):
         newgamescene.addWindow(NewGameWindow())
 
         lines = \
-                ["A - Your Name:", "B - Agency Name:", "C - Agency Abbreviation:"]
+                ["A - Your Name:", "B - Agency Name:", "C - Agency Abbreviation:", "D - Difficulty:"]
         newgamescene.addWindow(TextWindow(location = (0, 5), lines = lines, updown=None))
 
-        name = EditText(length = 32, activateButton = pygame.K_a, \
+        self.name = EditText(length = 32, activateButton = pygame.K_a, \
                 location = (len(lines[0]) + 1, 5), fgcolor='white')
 
         gender = random.sample(['male', 'female'], 1)[0]
         tempname = thehandler.model.getName(gender)
 
-        name.text = tempname[0] + " " + tempname[1]
+        self.name.text = tempname[0] + " " + tempname[1]
 
-        agencyname = EditText(length = 32, activateButton = pygame.K_b, \
+        self.agencyname = EditText(length = 32, activateButton = pygame.K_b, \
                 location = (len(lines[1]) + 1, 6), fgcolor='white')
-        agencyname.text = 'Central Terrorist Task Force'
+        self.agencyname.text = 'Central Terrorist Task Force'
 
-        agencyabbrev = EditText(length = 8, activateButton = pygame.K_c, \
+        self.agencyabbrev = EditText(length = 8, activateButton = pygame.K_c, \
                 location = (len(lines[2]) + 1, 7), fgcolor='white')
 
-        agencyabbrev.text = 'CTTF'
+        self.agencyabbrev.text = 'CTTF'
 
-        newgamescene.addWindow(name)
-        newgamescene.addWindow(agencyname)
-        newgamescene.addWindow(agencyabbrev)
+        self.difficultyOptions = ['Easy   ($1B starting)', \
+                                  'Normal ($100M starting)', \
+                                  'Hard   ($10M starting)']
 
-        newgamescene.addWindow(SelectText(location = (1,20), dims=(15,2), leftright=(pygame.K_LEFT, pygame.K_RIGHT), lines=["Option A", "Option B", "Option C", "Oprtion D", "OOO E"], border=True))
+        self.difficulty = None
+
+        def updateDifficulty(self, selected):
+            self.selectedDifficulty = selected
+
+            if not self.difficulty:
+                self.difficulty = TextWindow(location=(len(lines[3])+1, 8), fgcolor='white', \
+                        lines=[self.difficultyOptions[self.selectedDifficulty]], updown=None)
+            else:
+                self.difficulty.lines = [self.difficultyOptions[self.selectedDifficulty]]
+
+            self.difficulty.clearActions()
+            self.difficulty.addAction(pygame.K_d, lambda x: \
+                    newgamescene.addWindow(createSelector(newgamescene, \
+                                                      self.difficultyOptions, \
+                                                      lambda choice: updateDifficulty(self, choice), \
+                                                      border=True, \
+                                                      title="Select Difficulty",\
+                                                      default = selected)))
+
+        updateDifficulty(self, 1)
+
+        newgamescene.addWindow(self.name)
+        newgamescene.addWindow(self.agencyname)
+        newgamescene.addWindow(self.agencyabbrev)
+        newgamescene.addWindow(self.difficulty)
 
         thehandler.g_game.pushScene(newgamescene)
 

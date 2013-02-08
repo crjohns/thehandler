@@ -19,7 +19,12 @@ class Scene:
         if window.isModal():
             self.actions = dict()
 
+        self.addActions(window.built_in_actions)
         self.addActions(window.getActions())
+
+    def removeWindow(self, window):
+        self.windows = filter(lambda x: x[1] != window, self.windows)
+        self.refreshActions()
 
     def addActions(self, actions):
         for (key,action) in actions:
@@ -33,6 +38,7 @@ class Scene:
             if window.isModal():
                 self.actions = dict()
 
+            self.addActions(window.built_in_actions)
             self.addActions(window.getActions())
 
             if window.isModal():
