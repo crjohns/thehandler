@@ -1,10 +1,11 @@
 import thehandler
 import json
 import random
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, backref
 Base = declarative_base()
 
 names = None
@@ -62,6 +63,29 @@ class Name(Base):
 
     def __repr__(self):
         return "(Name '%s', %s, %s, %s)" % (self.name, self.gender, self.part, self.nation)
+
+class Country(Base):
+    __tablename__ = 'country'
+    id = Column(Integer, primary_key = True)
+    name = Column(String)
+    abbrev = Column(String)
+    agencies = relationship('Agency')
+
+    def __init__(self, name, abbrev):
+        self.name = name
+        self.abbrev = abbrev
+
+class Agency(Base):
+    __tablename__ = 'agency'
+    id = Column(Integer, primary_key = True)
+    fullname = Column(String)
+    nickname = Column(String)
+    country = Column(Integer, ForeignKey('country.id'))
+
+    def __init__(self, fullname, nickname):
+        self.fullname = fullname
+        self.nickname = nickname
+
 
 def openDB(gamename, newgame=False, debug=False):
     global engine 
