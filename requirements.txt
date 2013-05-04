@@ -1,2 +1,2 @@
-SQLAlchemy==0.7.9
-npyscreen>=2.0pre71
+pygame==1.9.2pre
+PyGL2D==0.3.7
