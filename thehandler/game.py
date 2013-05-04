@@ -1,6 +1,7 @@
 import pygame
 from pygame import Color
 import thehandler
+import view
 
 class Game:
 
@@ -10,7 +11,7 @@ class Game:
         self.winx = config['window_x']
         self.winy = config['window_y']
 
-        self.scene = None
+        self.scene = view.MainMenuScene(self.winx, self.winy)
 
 
     def render(self):

@@ -11,6 +11,8 @@ PROGRAM_NAME = "The Handler"
 VERSION = "0.0 dev"
 
 
+DEBUG = False
+
 _config_search_dirs = [expanduser('~')]
 
 _global_config = None
@@ -59,7 +61,8 @@ def get_config():
     (head, _) = os.path.split(filename)
     _global_config['data_dir'] = os.path.normpath(os.path.join(head, _global_config['data_dir']))
 
-    print _global_config
+    if DEBUG:
+        print _global_config
 
     return _global_config
 

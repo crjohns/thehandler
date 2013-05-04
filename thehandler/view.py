@@ -1,6 +1,7 @@
 import bisect 
+import resources
 
-class View:
+class View(object):
 
     """
         Generic view that supports drawing and input
@@ -144,6 +145,32 @@ class View:
         return self.height/2 - height/2 + self.y
 
 
+class MainMenuScene(View):
+
+    def __init__(self, windowx, windowy):
+        super(MainMenuScene, self).__init__(0,0,windowx, windowy)
+
+        logoview = LogoView(0,0)
+        logoview.x = self.center_x(logoview.width)
+        self.addView(logoview)
+
+
+class LogoView(View):
+
+    def __init__(self, x, y, z=100):
+        self.image = resources.load_image('logo.png')
+        super(LogoView, self).__init__(x,y,self.image.get_width(), self.image.get_height(), z)
+        
+
+    def draw(self, window):
+        pos = self.globalcoords((self.x, self.y))
+        window.blit(self.image, (pos[0], pos[1]))
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+
+
+
+
