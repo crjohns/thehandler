@@ -15,6 +15,7 @@ while True:
         if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
             exit(0)
 
+    game.mouse_move(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0])
     game.render()
 
     clock.tick(60)

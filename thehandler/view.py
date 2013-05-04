@@ -1,5 +1,7 @@
 import bisect 
 import resources
+import pygame
+from pygame.locals import *
 
 class View(object):
 
@@ -116,19 +118,19 @@ class View(object):
 
     def on_click(self, pos):
         for view in self.subviews:
-            if view.on_click(self, pos):
+            if view.contains(pos) and view.on_click(pos):
                 return True
         return False
 
-    def on_hover(self, pos):
+    def on_hover(self, pos, isDown):
         for view in self.subviews:
-            if view.on_hover(self, pos):
+            if view.contains(pos) and view.on_hover(pos, isDown):
                 return True
         return False
 
     def on_key_event(self, key, value, isUp):
         for view in self.subviews:
-            if view.on_key_event(self, pos):
+            if view.on_key_event(key, value, isUp):
                 return True
         return False
 
@@ -154,6 +156,9 @@ class MainMenuScene(View):
         logoview.x = self.center_x(logoview.width)
         self.addView(logoview)
 
+        newgame = ButtonView("New Game", self.center_x(200), 100, 200, 60)
+        self.addView(newgame)
+
 
 class LogoView(View):
 
@@ -164,8 +169,44 @@ class LogoView(View):
 
     def draw(self, window):
         pos = self.globalcoords((self.x, self.y))
-        window.blit(self.image, (pos[0], pos[1]))
+        window.blit(self.image, pos)
 
+class ButtonView(View):
+
+    def __init__(self, text, x, y, w, h, z=100):
+        super(ButtonView, self).__init__(x,y,w,h,z)
+
+        self.button_reg = pygame.Surface((w,h), HWSURFACE | SRCALPHA)
+        self.button_over = pygame.Surface((w,h), HWSURFACE | SRCALPHA)
+        self.button_down = pygame.Surface((w,h), HWSURFACE | SRCALPHA)
+        self.button_reg.fill(Color(100,0,0))
+        self.button_over.fill(Color(100,40,40))
+        self.button_down.fill(Color(90,0,0))
+
+
+        myfont = pygame.font.SysFont('helvetica', 256)
+        surf = myfont.render(text, 1, Color(200,200,200))
+
+        fit = surf.get_rect().fit(Rect(w*0.05,0,w*0.9,h))
+
+        surf = pygame.transform.smoothscale(surf, (fit.width, fit.height))
+        self.button_reg.blit(surf, (fit.left, fit.top))
+        self.button_over.blit(surf, (fit.left, fit.top))
+        self.button_down.blit(surf, (fit.left, fit.top))
+
+        self.curbutton = self.button_reg
+
+    def on_hover(self, pos, isDown):
+        if not isDown:
+            self.curbutton = self.button_over
+        else:
+            self.curbutton = self.button_down
+
+
+    def draw(self, window):
+        pos = self.globalcoords((self.x, self.y))
+        window.blit(self.curbutton, pos)
+        self.curbutton = self.button_reg #reset to clear hover effects
 
 if __name__ == "__main__":
     import doctest

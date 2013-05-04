@@ -14,6 +14,10 @@ class Game:
         self.scene = view.MainMenuScene(self.winx, self.winy)
 
 
+    def mouse_move(self, pos, leftDown):
+        self.scene.on_hover(pos, leftDown)
+
+
     def render(self):
         self.window.fill(Color('black'))
 

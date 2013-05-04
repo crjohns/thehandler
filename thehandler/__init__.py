@@ -81,6 +81,7 @@ def get_game():
     window = pygame.display.set_mode((config['window_x'], config['window_y']), DOUBLEBUF | HWACCEL)
     pygame.display.set_caption(PROGRAM_NAME + " " + VERSION)
     pygame.key.set_repeat(300, 25)
+    pygame.font.init()
 
     _global_game = Game(window)
     return _global_game
