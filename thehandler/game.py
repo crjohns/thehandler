@@ -15,7 +15,12 @@ class Game:
 
 
     def mouse_move(self, pos, leftDown):
-        self.scene.on_hover(pos, leftDown)
+        if self.scene:
+            self.scene.on_hover(pos, leftDown)
+
+    def mouse_click(self, pos, button):
+        if self.scene:
+            self.scene.on_click(pos, button)
 
 
     def render(self):

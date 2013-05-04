@@ -1,7 +1,13 @@
+import thehandler
 import bisect 
 import resources
 import pygame
 from pygame.locals import *
+
+
+def on_click_listener(view, fn):
+    view.on_click = fn
+    return fn
 
 class View(object):
 
@@ -65,6 +71,9 @@ class View(object):
         self.subviews = []
         self.parent = None
 
+        self._click_handlers = []
+        self._key_handlers = []
+
     def addView(self, view):
         i = bisect.bisect_left(self._viewkeys, view.zindex)
         self._viewkeys.insert(i, view.zindex)
@@ -115,12 +124,35 @@ class View(object):
         
         return (pos[0] + offx, pos[1] + offy)
 
+    def on_click(self, pos, button):
+        for handler in self._click_handlers:
+            if handler(self, pos, button):
+                return True
 
-    def on_click(self, pos):
         for view in self.subviews:
-            if view.contains(pos) and view.on_click(pos):
+            if view.contains(pos) and view.on_click(pos, button):
                 return True
         return False
+
+    def click_handler(self, handler):
+        self._click_handlers.append(handler)
+
+    def button_handler(self, handler, checkbutton):
+        def handler2(self, pos, button):
+            if button != checkbutton:
+                return False
+            else:
+                return handler(self, pos)
+        return handler2
+    
+    def left_click_handler(self, handler):
+        self._click_handlers.append(self.button_handler(handler, 1))
+    def right_click_handler(self, handler):
+        self._click_handlers.append(self.button_handler(handler, 3))
+    def scroll_up_handler(self, handler):
+        self._click_handlers.append(self.button_handler(handler, 4))
+    def scroll_down_handler(self, handler):
+        self._click_handlers.append(self.button_handler(handler, 5))
 
     def on_hover(self, pos, isDown):
         for view in self.subviews:
@@ -141,10 +173,18 @@ class View(object):
     def __str__(self):
         return "View(%d,%d,%d,%d,%d)" % (self.x, self.y, self.width, self.height, self.zindex)
 
-    def center_x(self, width):
-        return self.width/2 - width/2 + self.x
-    def center_y(self, height):
-        return self.height/2 - height/2 + self.y
+    def center_x(self, width, relative=True):
+        if relative:
+            (x,y) = self.globalcoords((0,0))
+        else:
+            (x,y) = (0,0)
+        return self.width/2 - width/2 + x
+    def center_y(self, height, relative=True):
+        if relative:
+            (x,y) = self.globalcoords((0,0))
+        else:
+            (x,y) = (0,0)
+        return self.height/2 - height/2 + y
 
 
 class MainMenuScene(View):
@@ -156,8 +196,20 @@ class MainMenuScene(View):
         logoview.x = self.center_x(logoview.width)
         self.addView(logoview)
 
-        newgame = ButtonView("New Game", self.center_x(200), 100, 200, 60)
+
+        base = 200
+
+        newgame = ButtonView("New Game", self.center_x(200), base, 200, 60)
         self.addView(newgame)
+        loadgame = ButtonView("Load Game", self.center_x(200), base+80, 200, 60)
+        self.addView(loadgame)
+        scores = ButtonView("Scores", self.center_x(200), base+160, 200, 60)
+        self.addView(scores)
+
+        version = LabelView("Version " + thehandler.VERSION, \
+                0, 584)
+        version.y = windowy - version.height
+        self.addView(version)
 
 
 class LogoView(View):
@@ -171,28 +223,42 @@ class LogoView(View):
         pos = self.globalcoords((self.x, self.y))
         window.blit(self.image, pos)
 
+class LabelView(View):
+
+    def __init__(self, text, x, y, z=100, fontsize = 16, color = Color(200,200,200)):
+        myfont = pygame.font.SysFont('helvetica', fontsize)
+        self.surface = myfont.render(text, 1, color)
+
+        super(LabelView, self).__init__(x,y,self.surface.get_width(), self.surface.get_height(), z)
+
+    def draw(self, window):
+        pos = self.globalcoords((self.x, self.y))
+
+        window.blit(self.surface, pos)
+
+
+
 class ButtonView(View):
 
-    def __init__(self, text, x, y, w, h, z=100):
+    def __init__(self, text, x, y, w, h, z=100, fontsize = 32):
         super(ButtonView, self).__init__(x,y,w,h,z)
 
         self.button_reg = pygame.Surface((w,h), HWSURFACE | SRCALPHA)
         self.button_over = pygame.Surface((w,h), HWSURFACE | SRCALPHA)
         self.button_down = pygame.Surface((w,h), HWSURFACE | SRCALPHA)
         self.button_reg.fill(Color(100,0,0))
-        self.button_over.fill(Color(100,40,40))
-        self.button_down.fill(Color(90,0,0))
+        self.button_over.fill(Color(110,10,10))
+        self.button_down.fill(Color(120,40,40))
 
 
-        myfont = pygame.font.SysFont('helvetica', 256)
+        myfont = pygame.font.SysFont('helvetica', fontsize)
         surf = myfont.render(text, 1, Color(200,200,200))
 
-        fit = surf.get_rect().fit(Rect(w*0.05,0,w*0.9,h))
-
-        surf = pygame.transform.smoothscale(surf, (fit.width, fit.height))
-        self.button_reg.blit(surf, (fit.left, fit.top))
-        self.button_over.blit(surf, (fit.left, fit.top))
-        self.button_down.blit(surf, (fit.left, fit.top))
+        cx = self.center_x(surf.get_width(), False)
+        cy = self.center_y(surf.get_height(), False)
+        self.button_reg.blit(surf, (cx, cy))
+        self.button_down.blit(surf, (cx, cy))
+        self.button_over.blit(surf, (cx, cy))
 
         self.curbutton = self.button_reg
 
