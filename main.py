@@ -17,6 +17,8 @@ while True:
 
         if event.type == pygame.MOUSEBUTTONUP:
             game.mouse_click(event.pos, event.button)
+        if event.type == pygame.KEYDOWN:
+            game.keyboard_action(event.key, event.mod, event.unicode, True)
 
     game.mouse_move(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0])
     game.render()

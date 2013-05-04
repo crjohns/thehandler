@@ -212,6 +212,21 @@ class MainMenuScene(View):
         self.addView(version)
 
 
+        @newgame.left_click_handler
+        def fn(self, pos):
+            thehandler.get_game().scene = NewGameScene(windowx, windowy)
+
+class NewGameScene(View):
+    def __init__(self, windowx, windowy):
+        super(NewGameScene, self).__init__(0, 0, windowx, windowy)
+
+        label = LabelView("Start New Game", 0, 40, fontsize = 32)
+        label.x = self.center_x(label.width)
+        self.addView(label)
+
+        name = TextInputView("Chris Johnson", 100, 100)
+        self.addView(name)
+
 class LogoView(View):
 
     def __init__(self, x, y, z=100):
@@ -226,15 +241,74 @@ class LogoView(View):
 class LabelView(View):
 
     def __init__(self, text, x, y, z=100, fontsize = 16, color = Color(200,200,200)):
-        myfont = pygame.font.SysFont('helvetica', fontsize)
-        self.surface = myfont.render(text, 1, color)
+        self.fontsize = fontsize
+        self.color = color
+
+        self.setText(text)
 
         super(LabelView, self).__init__(x,y,self.surface.get_width(), self.surface.get_height(), z)
 
+    def setText(self, text):
+        self.text = text
+        self.font = pygame.font.SysFont('helvetica', self.fontsize)
+        self.surface = self.font.render(text, 1, self.color)
+        self.width = self.surface.get_width()
+        self.height = self.surface.get_height()
+
     def draw(self, window):
         pos = self.globalcoords((self.x, self.y))
-
         window.blit(self.surface, pos)
+
+class TextInputView(LabelView):
+
+    def __init__(self, text, x, y, z=100, fontsize=16, color = Color(200,200,200), maxlength = None):
+        super(TextInputView, self).__init__(text, x, y, z, fontsize, color)
+
+        self.maxlength = maxlength
+        self.input_active = False
+        self.char_offset = 0
+        self.line_offset = 0
+        self.text = text
+
+        self.left_click_handler(lambda self,pos: self.left_click(pos))
+
+    def draw(self, window):
+        super(TextInputView, self).draw(window)
+        if self.input_active:
+            (myx, myy) = self.globalcoords((self.x, self.y))
+            myx += self.line_offset
+            
+            pygame.draw.line(window, self.color, (myx, myy), (myx, myy+self.height))
+
+
+    def setText(self, text):
+        super(TextInputView, self).setText(text)
+        self.width = int(self.width * 0.05)
+
+    def text_input(self, key, val):
+
+        if key == pygame.K_RETURN:
+            self.input_active = False
+            thehandler.get_game().set_text_input(None)
+
+    def left_click(self, pos):
+        coords = self.relcoords(pos)
+
+        xrel = coords[0]-self.x
+
+        asum = 0
+        count = 0
+        for (_,_,_,_,asc) in self.font.metrics(self.text):
+            if asum+asc > xrel:
+                break
+
+            asum += asc
+            count += 1
+
+        self.char_offset = count
+        self.line_offset = asum
+        self.input_active = True
+        thehandler.get_game().set_text_input(lambda key, val: self.text_input(key,val))
 
 
 
@@ -251,7 +325,7 @@ class ButtonView(View):
         self.button_down.fill(Color(120,40,40))
 
 
-        myfont = pygame.font.SysFont('helvetica', fontsize)
+        myfont = pygame.font.SysFont('helvetica', fontsize+0)
         surf = myfont.render(text, 1, Color(200,200,200))
 
         cx = self.center_x(surf.get_width(), False)
