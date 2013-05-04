@@ -1,5 +1,5 @@
 import pygame
-import pygl2d
+from pygame.locals import *
 import argparse
 import json
 import sys
@@ -14,6 +14,7 @@ VERSION = "0.0 dev"
 _config_search_dirs = [expanduser('~')]
 
 _global_config = None
+_global_game = None
 
 def get_config():
     global _config_search_dirs
@@ -52,18 +53,31 @@ def get_config():
         print "FATAL: Parse error in configuration file %s\n%s" % (filename, e)
         sys.exit(1)
 
+    if 'data_dir' not in _global_config:
+        print "FATAL: Missing 'data_dir' setting in config file"
+
+    (head, _) = os.path.split(filename)
+    _global_config['data_dir'] = os.path.normpath(os.path.join(head, _global_config['data_dir']))
+
+    print _global_config
+
     return _global_config
 
 
 
 
 
-def createGame():
+def get_game():
+    global _global_game
+
+    if _global_game:
+        return _global_game
 
     config = get_config()
 
-    window = pygl2d.display.set_mode((config['window_x'], config['window_y']), pygame.DOUBLEBUF)
+    window = pygame.display.set_mode((config['window_x'], config['window_y']), DOUBLEBUF | HWACCEL)
     pygame.display.set_caption(PROGRAM_NAME + " " + VERSION)
     pygame.key.set_repeat(300, 25)
 
-    return Game(window)
+    _global_game = Game(window)
+    return _global_game

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import pygame
+from pygame.locals import *
 import thehandler
 
 
-game = thehandler.createGame()
+game = thehandler.get_game()
 
 clock = pygame.time.Clock()
 
@@ -14,6 +15,6 @@ while True:
         if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
             exit(0)
 
-
+    game.render()
 
     clock.tick(60)

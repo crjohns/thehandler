@@ -1,4 +1,6 @@
 {
     "window_x": 800,
-    "window_y": 600
+    "window_y": 600,
+
+    "data_dir": "../data"
 }
