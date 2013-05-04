@@ -1,4 +1,4 @@
 The Handler
 ==========
 
-ASCII Spy Game
+A game of spies.
