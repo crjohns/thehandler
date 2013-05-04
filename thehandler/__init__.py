@@ -5,6 +5,7 @@ import json
 import sys
 import os.path
 from os.path import expanduser
+from game import Game
 
 PROGRAM_NAME = "The Handler"
 VERSION = "0.0 dev"
@@ -47,6 +48,9 @@ def get_config():
     except IOError, e:
         print "FATAL: Failed to load configuration file (%s)" % str(e)
         sys.exit(1)
+    except ValueError, e:
+        print "FATAL: Parse error in configuration file %s\n%s" % (filename, e)
+        sys.exit(1)
 
     return _global_config
 
@@ -58,9 +62,8 @@ def createGame():
 
     config = get_config()
 
-    screen = pygl2d.display.set_mode((config['window_x'], config['window_y']), pygame.DOUBLEBUF)
+    window = pygl2d.display.set_mode((config['window_x'], config['window_y']), pygame.DOUBLEBUF)
     pygame.display.set_caption(PROGRAM_NAME + " " + VERSION)
     pygame.key.set_repeat(300, 25)
 
-    return screen 
-
+    return Game(window)
