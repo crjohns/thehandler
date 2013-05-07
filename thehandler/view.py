@@ -224,7 +224,7 @@ class NewGameScene(View):
         label.x = self.center_x(label.width)
         self.addView(label)
 
-        name = TextInputView("Chris Johnson", 100, 100)
+        name = TextInputView("Chris Johnson", 100, 100, maxlength = 50)
         self.addView(name)
 
 class LogoView(View):
@@ -262,10 +262,10 @@ class LabelView(View):
 class TextInputView(LabelView):
 
     def __init__(self, text, x, y, z=100, fontsize=16, color = Color(200,200,200), maxlength = None):
+        self.input_active = False
         super(TextInputView, self).__init__(text, x, y, z, fontsize, color)
 
         self.maxlength = maxlength
-        self.input_active = False
         self.char_offset = 0
         self.line_offset = 0
         self.text = text
@@ -283,19 +283,32 @@ class TextInputView(LabelView):
 
     def setText(self, text):
         super(TextInputView, self).setText(text)
-        self.width = int(self.width * 0.05)
+        self.width = int(self.width + 50)
+        if self.input_active:
+            (self.char_offset, self.line_offset) = self._find_char_offsets(min(self.char_offset, len(self.text)))
 
     def text_input(self, key, val):
 
         if key == pygame.K_RETURN:
             self.input_active = False
             thehandler.get_game().set_text_input(None)
+        elif key == pygame.K_LEFT:
+            (self.char_offset, self.line_offset) = self._find_char_offsets(max(self.char_offset-1,0))
+        elif key == pygame.K_RIGHT:
+            (self.char_offset, self.line_offset) = self._find_char_offsets(min(self.char_offset+1,len(self.text)))
+        elif key == pygame.K_BACKSPACE:
+            if self.char_offset > 0:
+                self.char_offset -= 1
+                self.setText(self.text[0:self.char_offset]+self.text[self.char_offset+1:])
+        else:
+            if self.char_offset < self.maxlength:
+                self.char_offset += 1
+                self.setText(self.text[0:self.char_offset-1] + val + self.text[self.char_offset-1:])
+        return True
 
-    def left_click(self, pos):
+    def _find_pos_offsets(self, pos):
         coords = self.relcoords(pos)
-
         xrel = coords[0]-self.x
-
         asum = 0
         count = 0
         for (_,_,_,_,asc) in self.font.metrics(self.text):
@@ -305,8 +318,22 @@ class TextInputView(LabelView):
             asum += asc
             count += 1
 
-        self.char_offset = count
-        self.line_offset = asum
+        return (count, asum)
+
+    def _find_char_offsets(self, count):
+        left = count
+        asum = 0
+        for (_,_,_,_,asc) in self.font.metrics(self.text):
+            if left <= 0:
+                break
+
+            left -= 1
+            asum += asc
+
+        return (count, asum)
+
+    def left_click(self, pos):
+        (self.char_offset, self.line_offset) = self._find_pos_offsets(pos) 
         self.input_active = True
         thehandler.get_game().set_text_input(lambda key, val: self.text_input(key,val))
 
